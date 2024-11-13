@@ -21,20 +21,23 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import Image from "next/image";
+
 import { data } from "@/constants";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { usePathname } from "next/navigation";
+import Logo from "./logo";
+import { useClerk } from "@clerk/nextjs";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const url = usePathname();
+  const { signOut } = useClerk();
 
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="ml-2">
-        <Image src="/logo.svg" alt="Logo" width={200} height={60} />
+      <SidebarHeader className="ml-2 h-16 w-full">
+        <Logo />
       </SidebarHeader>
       <SidebarContent className="gap-2 mt-10">
         {/* We create a collapsible SidebarGroup for each parent. */}
@@ -82,7 +85,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarRail />
       <SidebarFooter className="flex items-center justify-center h-20">
-        <Button className="w-full">Logout</Button>
+        <Button
+          className="w-full"
+          onClick={() => signOut({ redirectUrl: "/" })}
+        >
+          Logout
+        </Button>
 
         <p className="text-xs">
           Designed & Developed by{" "}

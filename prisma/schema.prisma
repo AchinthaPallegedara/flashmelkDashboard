@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GalleryCategory {
+  FASHION
+  COMMERCIAL
+  EDITORIAL
+  BEAUTY
+  CORPORATE_PROFILES
+}
+
+model Customer {
+  customer_id String    @id @default(uuid())
+  name        String
+  email       String    @unique
+  phone       String
+  bookings    Booking[]
+  created_at  DateTime  @default(now())
+}
+
+model Booking {
+  booking_id   String   @id @default(uuid())
+  customer_id  String
+  date         DateTime
+  start_time   DateTime
+  end_time     DateTime
+  package_name String
+  status       String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  customer Customer @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Gallery {
+  gallery_id     String             @id @default(uuid())
+  category       GalleryCategory
+  main_image_url String
+  title          String
+  sub_images     Gallery_SubImage[]
+  created_at     DateTime           @default(now())
+  updated_at     DateTime           @updatedAt
+}
+
+model Gallery_SubImage {
+  sub_image_id  String @id @default(uuid())
+  gallery_id    String
+  sub_image_url String
+
+  gallery Gallery @relation(fields: [gallery_id], references: [gallery_id], onDelete: Cascade, onUpdate: Cascade)
+}

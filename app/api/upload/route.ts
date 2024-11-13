@@ -1,4 +1,8 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 
 const {
@@ -13,7 +17,7 @@ if (!CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
   );
 }
 
-const S3 = new S3Client({
+export const S3 = new S3Client({
   region: "auto",
   endpoint: CLOUDFLARE_R2_ENDPOINT,
   credentials: {
@@ -51,3 +55,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
+
+export const deleteGallery = async (fileName: string) => {
+  const params = {
+    Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!, // Use non-null assertion as this should be set
+    Key: fileName,
+  };
+
+  try {
+    await S3.send(new DeleteObjectCommand(params));
+    console.log(`Deleted file ${fileName} from S3`);
+  } catch (error) {
+    console.error(`Error deleting file ${fileName} from S3:`, error);
+    throw error;
+  }
+};

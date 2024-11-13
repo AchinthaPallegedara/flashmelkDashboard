@@ -1,6 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,9 +29,9 @@ import {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SingleDropzone, MultiDropzone } from "@/components/Dropzone";
-import { addNewGallery } from "@/lib/actions/gallery.action";
+
 import { toast } from "sonner";
+import { updateGallery } from "@/lib/actions/gallery.action";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
@@ -47,87 +48,67 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const Page = () => {
-  const [mainImagePreview, setMainImagePreview] = useState<File | null>(null);
-  const [subImagesPreview, setSubImagesPreview] = useState<File[]>([]);
+interface Props {
+  details: {
+    gallery_id: string;
+    category:
+      | "FASHION"
+      | "COMMERCIAL"
+      | "EDITORIAL"
+      | "BEAUTY"
+      | "CORPORATE_PROFILES";
+    main_image_url: string;
+    title: string;
+    created_at: Date;
+    sub_images: { sub_image_url: string }[];
+  } | null;
+}
+
+const UpdateGallery = ({ details }: Props) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      category: "FASHION",
+      name: details?.title || "Default Name",
+      category: details?.category || "FASHION",
       mainImage: null,
       subImages: [],
     },
   });
 
-  const handleMainImageSelect = (file: File | null) => {
-    form.setValue("mainImage", file);
-    setMainImagePreview(file);
-  };
-
-  const handleSubImagesSelect = (files: File[]) => {
-    form.setValue("subImages", files);
-    setSubImagesPreview(files);
-  };
-
-  const uploadToR2 = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      return data.url;
-    } catch (error) {
-      console.error("Upload failed:", error);
-      throw error;
-    }
-  };
-
-  const clearForm = () => {
-    form.reset();
-
-    setMainImagePreview(null);
-    setSubImagesPreview([]);
-  };
+  useEffect(() => {
+    // Set default values once `details` is available
+    form.reset({
+      name: details?.title || "Default Name",
+      category: details?.category || "FASHION",
+      mainImage: details?.main_image_url || null,
+      subImages: details?.sub_images || [],
+    });
+  }, [details, form]);
 
   const onSubmit = async (values: FormData) => {
     try {
       setIsLoaded(true);
-      const mainImageUrl = values.mainImage
-        ? await uploadToR2(values.mainImage)
-        : null;
-      const subImageUrls = await Promise.all(
-        values.subImages.map((file: File) => uploadToR2(file))
-      );
+      const { name, category } = values;
+      if (!details?.gallery_id) {
+        throw new Error("Gallery ID is required");
+      }
+      updateGallery({
+        gallery_id: details.gallery_id,
+        name,
+        category,
+      });
 
-      console.log({
-        name: values.name,
-        category: values.category,
-        mainImageUrl,
-        subImageUrls,
-      });
-      addNewGallery({
-        name: values.name,
-        category: values.category,
-        mainImageUrl: mainImageUrl || "",
-        subImageUrls: subImageUrls,
-      });
-      clearForm();
-      toast("Gallery has been created.", {
-        description: "Gallery has been created successfully",
+      toast("Gallery has been updated.", {
+        description: "Gallery has been updated successfully",
       });
 
       setIsLoaded(false);
     } catch (error) {
       console.log("Form submission failed:", error);
-      toast("There is and Error", {
-        description: "There is an error while creating the gallery",
+      toast("There is an Error", {
+        description: "There is an error while updating the gallery",
       });
       setIsLoaded(false);
     }
@@ -195,41 +176,37 @@ const Page = () => {
                 </div>
               </div>
               <div className="grid">
-                <FormField
-                  control={form.control}
-                  name="mainImage"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Main Image</FormLabel>
-                      <FormControl>
-                        <SingleDropzone
-                          onFileSelect={handleMainImageSelect}
-                          value={mainImagePreview}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {details?.main_image_url && details?.title && (
+                  <>
+                    <p className="text-lg font-medium">Main Image</p>
+                    <img
+                      src={details.main_image_url}
+                      alt={details.title}
+                      className="object-cover w-60 h-80"
+                    />
+                  </>
+                )}
               </div>
             </div>
 
-            <FormField
-              control={form.control}
-              name="subImages"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Sub Images</FormLabel>
-                  <FormControl>
-                    <MultiDropzone
-                      onFileSelect={handleSubImagesSelect}
-                      value={subImagesPreview}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div>
+              <p className="text-lg font-medium">Sub Images </p>
+              <div className="grid grid-cols-4">
+                {details?.sub_images &&
+                  details?.title &&
+                  details.sub_images.map(
+                    (subImage: { sub_image_url: string }, index: number) => (
+                      <div key={index} className="grid mx-1 mt-2">
+                        <img
+                          src={subImage.sub_image_url}
+                          alt={details.title}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    )
+                  )}
+              </div>
+            </div>
 
             <Button type="submit" className="w-full" disabled={isLoaded}>
               {isLoaded ? "Submitting..." : "Submit Gallery"}
@@ -241,4 +218,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default UpdateGallery;

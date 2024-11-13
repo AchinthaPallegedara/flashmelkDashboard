@@ -54,7 +54,7 @@ export const data = {
         {
           title: "View All",
           icon: Images,
-          url: "#",
+          url: "/gallery",
         },
         {
           title: "Add New",

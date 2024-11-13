@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
+import { ClerkProvider } from "@clerk/nextjs";
 // import { ThemeProvider } from "@/components/theme-provider";
 
 const poppins = Poppins({
@@ -19,12 +21,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${poppins.variable}  antialiased`}>
-        {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
-        {children}
-        {/* </ThemeProvider> */}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${poppins.variable}  antialiased`}>
+          {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
+
+          {children}
+          <Toaster />
+          {/* </ThemeProvider> */}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -1,9 +1,14 @@
+"use server";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
+import {
+  getAllGalleries,
+  getGalleriesbyCategory,
+} from "@/lib/actions/gallery.action";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 const app = new Hono().basePath("/api");
 
@@ -272,6 +277,45 @@ app.delete("/holidays/:id", (c) => {
       return c.json({ error: error.message }, error.status);
     }
     return c.json({ error: "Failed to delete holiday" }, 500);
+  }
+});
+
+//Get Galleries
+app.get("/galleries", async (c) => {
+  try {
+    const galleries = await getAllGalleries();
+
+    return c.json(galleries);
+  } catch (error) {
+    console.log("Error fetching galleries:", error);
+    return c.json({ error: "Failed to fetch galleries" }, 500);
+  }
+});
+
+// Get gallery by category
+app.get("/galleries/:category", async (c) => {
+  try {
+    const category = c.req.param("category");
+    const validCategories = [
+      "FASHION",
+      "COMMERCIAL",
+      "EDITORIAL",
+      "BEAUTY",
+      "CORPORATE_PROFILES",
+    ] as const;
+    if (
+      !validCategories.includes(category as (typeof validCategories)[number])
+    ) {
+      return c.json({ error: "Invalid category" }, 400);
+    }
+    const galleries = await getGalleriesbyCategory(
+      category as (typeof validCategories)[number]
+    );
+
+    return c.json(galleries);
+  } catch (error) {
+    console.log("Error fetching galleries:", error);
+    return c.json({ error: "Failed to fetch galleries" }, 500);
   }
 });
 

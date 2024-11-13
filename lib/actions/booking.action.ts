@@ -1,0 +1,152 @@
+"use server";
+import { db } from "@/lib/db";
+import { createCustomer, getCustomerByEmail } from "./customer.action";
+
+// Fetch all bookings
+export const allBookings = async () => {
+  try {
+    const bookings = await db.booking.findMany({
+      where: {
+        status: {
+          not: "disapproved",
+        },
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+    return bookings;
+  } catch (error) {
+    console.log("Error fetching bookings:", error);
+    return { error: "Error fetching bookings" };
+  }
+};
+
+// Get bookings by a specific date
+export const getBookingByDate = async (date: string) => {
+  try {
+    const bookings = await db.booking.findMany({
+      where: {
+        date,
+        status: {
+          not: "disapproved",
+        },
+      },
+      orderBy: { start_time: "asc" },
+    });
+    return bookings;
+  } catch (error) {
+    console.log("Error fetching bookings:", error);
+    return { error: "Error fetching bookings by date" };
+  }
+};
+
+// Check for booking conflict by comparing times
+export async function checkBookingConflict(bookingData: {
+  date: string;
+  startTime: string;
+  endTime: string;
+}) {
+  try {
+    return await db.booking.findFirst({
+      where: {
+        date: bookingData.date,
+        OR: [
+          {
+            AND: [
+              { start_time: { lte: bookingData.startTime } },
+              { end_time: { gt: bookingData.startTime } },
+            ],
+          },
+          {
+            AND: [
+              { start_time: { lt: bookingData.endTime } },
+              { end_time: { gte: bookingData.endTime } },
+            ],
+          },
+        ],
+      },
+    });
+  } catch (error) {
+    console.error("Error in checkBookingConflict:", error);
+    throw error;
+  }
+}
+// Create a new booking
+export const createNewBooking = async (data: {
+  date: string;
+  name: string;
+  email: string;
+  phone: string;
+  startTime: string;
+  endTime: string;
+  packageType:
+    | "I-basic"
+    | "I-standard"
+    | "I-professional"
+    | "V-basic"
+    | "V-standard"
+    | "V-professional";
+}) => {
+  try {
+    // Check for any conflicts before creating the booking
+    const conflictingBooking = await checkBookingConflict(data);
+    if (conflictingBooking) {
+      throw new Error("Time slot already booked");
+    }
+
+    // Proceed with customer creation if needed
+    let customer = await getCustomerByEmail(data.email);
+    if (!customer) {
+      customer = await createCustomer({
+        email: data.email,
+        name: data.name,
+        phone: data.phone,
+      });
+    }
+
+    if (!customer) {
+      throw new Error("Failed to create or find customer");
+    }
+
+    // Create the booking
+    const booking = await db.booking.create({
+      data: {
+        date: data.date, // Ensure date is passed in valid DateTime format
+        start_time: data.startTime, // Full date and time
+        end_time: data.endTime, // Full date and time
+        package_name: data.packageType,
+        customer_id: customer.customer_id,
+        status: "pending",
+      },
+    });
+
+    return booking;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log("Error creating booking:", error.message);
+    } else {
+      console.log("Error creating booking:", error);
+    }
+    if (error instanceof Error) {
+      throw new Error(error.message || "Error creating booking");
+    } else {
+      throw new Error("Error creating booking");
+    }
+  }
+};
+
+// Fetch all holidays
+export const getAllHolidays = async () => {
+  try {
+    const holidays = await db.holiday.findMany({
+      orderBy: {
+        date: "asc",
+      },
+    });
+    return holidays;
+  } catch (error) {
+    console.log("Error fetching holidays:", error);
+    return { error: "Error fetching holidays" };
+  }
+};

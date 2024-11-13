@@ -7,14 +7,23 @@ import {
   getAllGalleries,
   getGalleriesbyCategory,
 } from "@/lib/actions/gallery.action";
-
-// export const runtime = "edge";
+import {
+  allBookings,
+  checkBookingConflict,
+  createNewBooking,
+  getAllHolidays,
+  getBookingByDate,
+} from "@/lib/actions/booking.action";
+import {
+  checkExistingHoliday,
+  checkHolidayByDate,
+  createNewHoliday,
+} from "@/lib/actions/holiday.action";
 
 const app = new Hono().basePath("/api");
 
 // Add CORS middleware before any routes
 app.use("*", async (c, next) => {
-  // Add CORS headers
   c.res.headers.set(
     "Access-Control-Allow-Origin",
     process.env.FRONTEND_URL || "http://localhost:3000"
@@ -27,7 +36,6 @@ app.use("*", async (c, next) => {
   c.res.headers.set("Access-Control-Max-Age", "86400");
   c.res.headers.set("Access-Control-Allow-Credentials", "true");
 
-  // Handle OPTIONS request
   if (c.req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -48,7 +56,14 @@ const BookingSchema = z.object({
     .string()
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format"),
   endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format"),
-  packageType: z.enum(["basic", "standard", "professional"]),
+  packageType: z.enum([
+    "I-basic",
+    "I-standard",
+    "I-professional",
+    "V-basic",
+    "V-standard",
+    "V-professional",
+  ]),
 });
 
 const HolidaySchema = z.object({
@@ -62,48 +77,20 @@ const HolidaySchema = z.object({
     .string()
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format")
     .optional(),
-  description: z.string().min(1, "Description is required"),
 });
 
-interface Booking extends z.infer<typeof BookingSchema> {
-  id: string;
-}
-
-interface Holiday extends z.infer<typeof HolidaySchema> {
-  id: string;
-}
-
-// In-memory storage
-const bookings: Booking[] = [];
-let holidays: Holiday[] = [];
-
-// Helper function to check time slot conflicts
-const hasTimeConflict = (
-  date: string,
-  startTime: string,
-  endTime: string,
-  existingStartTime: string,
-  existingEndTime: string
-) => {
-  return (
-    (startTime >= existingStartTime && startTime < existingEndTime) ||
-    (endTime > existingStartTime && endTime <= existingEndTime) ||
-    (startTime <= existingStartTime && endTime >= existingEndTime)
-  );
-};
-
 // Get bookings
-app.get("/bookings", (c) => {
+app.get("/bookings", async (c) => {
   try {
     const date = c.req.query("date");
     if (date) {
-      const filteredBookings = bookings.filter(
-        (booking) => booking.date === date
-      );
+      const filteredBookings = await getBookingByDate(date);
       return c.json(filteredBookings);
     }
+    const bookings = await allBookings();
     return c.json(bookings);
-  } catch {
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
     return c.json({ error: "Failed to fetch bookings" }, 500);
   }
 });
@@ -112,27 +99,10 @@ app.get("/bookings", (c) => {
 app.post("/bookings", async (c) => {
   try {
     const body = await c.req.json();
-
-    // Validate request body
     const validatedData = BookingSchema.parse(body);
 
     // Check for holidays first
-    const holiday = holidays.find((h) => {
-      if (h.date === validatedData.date) {
-        if (h.type === "full-day") return true;
-        if (h.type === "time-slot" && h.startTime && h.endTime) {
-          return hasTimeConflict(
-            validatedData.date,
-            validatedData.startTime,
-            validatedData.endTime,
-            h.startTime,
-            h.endTime
-          );
-        }
-      }
-      return false;
-    });
-
+    const holiday = await checkHolidayByDate(validatedData.date);
     if (holiday) {
       throw new HTTPException(409, {
         message:
@@ -143,30 +113,15 @@ app.post("/bookings", async (c) => {
     }
 
     // Check for booking conflicts
-    const conflictingBooking = bookings.find(
-      (booking) =>
-        booking.date === validatedData.date &&
-        hasTimeConflict(
-          validatedData.date,
-          validatedData.startTime,
-          validatedData.endTime,
-          booking.startTime,
-          booking.endTime
-        )
-    );
-
+    const conflictingBooking = await checkBookingConflict(validatedData);
     if (conflictingBooking) {
       throw new HTTPException(409, { message: "Time slot already booked" });
     }
 
-    const newBooking: Booking = {
-      id: crypto.randomUUID(),
-      ...validatedData,
-    };
-
-    bookings.push(newBooking);
+    const newBooking = await createNewBooking(validatedData);
     return c.json(newBooking, 201);
   } catch (error) {
+    console.error("Error creating booking:", error);
     if (error instanceof z.ZodError) {
       return c.json({ error: error.errors[0].message }, 400);
     }
@@ -178,18 +133,17 @@ app.post("/bookings", async (c) => {
 });
 
 // Get holidays
-app.get("/holidays", (c) => {
+app.get("/holidays", async (c) => {
   try {
     const date = c.req.query("date");
     if (date) {
-      const filteredHolidays = holidays.filter(
-        (holiday) => holiday.date === date
-      );
+      const filteredHolidays = await checkHolidayByDate(date);
       return c.json(filteredHolidays);
     }
+    const holidays = await getAllHolidays();
     return c.json(holidays);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
+    console.error("Error fetching holidays:", error);
     return c.json({ error: "Failed to fetch holidays" }, 500);
   }
 });
@@ -198,11 +152,8 @@ app.get("/holidays", (c) => {
 app.post("/holidays", async (c) => {
   try {
     const body = await c.req.json();
-
-    // Validate request body
     const validatedData = HolidaySchema.parse(body);
 
-    // Additional validation for time-slot type
     if (validatedData.type === "time-slot") {
       if (!validatedData.startTime || !validatedData.endTime) {
         throw new HTTPException(400, {
@@ -212,29 +163,11 @@ app.post("/holidays", async (c) => {
       }
     }
 
-    // Check for existing holidays on the same date
-    const existingHoliday = holidays.find((h) => {
-      if (h.date === validatedData.date) {
-        if (h.type === "full-day" || validatedData.type === "full-day")
-          return true;
-        if (
-          h.type === "time-slot" &&
-          h.startTime &&
-          h.endTime &&
-          validatedData.startTime &&
-          validatedData.endTime
-        ) {
-          return hasTimeConflict(
-            validatedData.date,
-            validatedData.startTime,
-            validatedData.endTime,
-            h.startTime,
-            h.endTime
-          );
-        }
-      }
-      return false;
-    });
+    const existingHoliday = await checkExistingHoliday(
+      validatedData.date,
+      validatedData.startTime || "",
+      validatedData.endTime || ""
+    );
 
     if (existingHoliday) {
       throw new HTTPException(409, {
@@ -242,14 +175,16 @@ app.post("/holidays", async (c) => {
       });
     }
 
-    const newHoliday: Holiday = {
-      id: crypto.randomUUID(),
-      ...validatedData,
-    };
+    const newHoliday = await createNewHoliday({
+      date: validatedData.date,
+      type: validatedData.type,
+      start_time: validatedData.startTime || "",
+      end_time: validatedData.endTime || "",
+    });
 
-    holidays.push(newHoliday);
     return c.json(newHoliday, 201);
   } catch (error) {
+    console.error("Error creating holiday:", error);
     if (error instanceof z.ZodError) {
       return c.json({ error: error.errors[0].message }, 400);
     }
@@ -260,34 +195,13 @@ app.post("/holidays", async (c) => {
   }
 });
 
-// Delete holiday
-app.delete("/holidays/:id", (c) => {
-  try {
-    const id = c.req.param("id");
-    const holidayIndex = holidays.findIndex((h) => h.id === id);
-
-    if (holidayIndex === -1) {
-      throw new HTTPException(404, { message: "Holiday not found" });
-    }
-
-    holidays = holidays.filter((h) => h.id !== id);
-    return c.json({ message: "Holiday deleted successfully" });
-  } catch (error) {
-    if (error instanceof HTTPException) {
-      return c.json({ error: error.message }, error.status);
-    }
-    return c.json({ error: "Failed to delete holiday" }, 500);
-  }
-});
-
-//Get Galleries
+// Get Galleries
 app.get("/galleries", async (c) => {
   try {
     const galleries = await getAllGalleries();
-
     return c.json(galleries);
   } catch (error) {
-    console.log("Error fetching galleries:", error);
+    console.error("Error fetching galleries:", error);
     return c.json({ error: "Failed to fetch galleries" }, 500);
   }
 });
@@ -303,18 +217,19 @@ app.get("/galleries/:category", async (c) => {
       "BEAUTY",
       "CORPORATE_PROFILES",
     ] as const;
+
     if (
       !validCategories.includes(category as (typeof validCategories)[number])
     ) {
       return c.json({ error: "Invalid category" }, 400);
     }
+
     const galleries = await getGalleriesbyCategory(
       category as (typeof validCategories)[number]
     );
-
     return c.json(galleries);
   } catch (error) {
-    console.log("Error fetching galleries:", error);
+    console.error("Error fetching galleries:", error);
     return c.json({ error: "Failed to fetch galleries" }, 500);
   }
 });

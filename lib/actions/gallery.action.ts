@@ -1,6 +1,6 @@
 "use server";
 
-import { deleteGallery } from "@/app/api/upload/route";
+import { deleteGallery } from "@/lib/s3";
 import { db } from "@/lib/db";
 
 export const addNewGallery = async (galleryData: {

@@ -1,4 +1,4 @@
-import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 import { S3 } from "@/lib/s3"; // Adjust the import path based on your file structure
 
@@ -31,18 +31,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
-
-export const deleteGallery = async (fileName: string) => {
-  const params = {
-    Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!,
-    Key: fileName,
-  };
-
-  try {
-    await S3.send(new DeleteObjectCommand(params));
-    console.log(`Deleted file ${fileName} from S3`);
-  } catch (error) {
-    console.error(`Error deleting file ${fileName} from S3:`, error);
-    throw error;
-  }
-};

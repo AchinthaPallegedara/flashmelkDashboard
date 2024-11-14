@@ -1,4 +1,4 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const {
   CLOUDFLARE_R2_ENDPOINT,
@@ -20,3 +20,18 @@ export const S3 = new S3Client({
     secretAccessKey: CLOUDFLARE_R2_SECRET_ACCESS_KEY,
   },
 });
+
+export const deleteGallery = async (fileName: string) => {
+  const params = {
+    Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!,
+    Key: fileName,
+  };
+
+  try {
+    await S3.send(new DeleteObjectCommand(params));
+    console.log(`Deleted file ${fileName} from S3`);
+  } catch (error) {
+    console.error(`Error deleting file ${fileName} from S3:`, error);
+    throw error;
+  }
+};

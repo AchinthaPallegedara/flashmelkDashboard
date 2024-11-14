@@ -20,28 +20,28 @@ export const data = {
         {
           title: "Pending to Approve",
           icon: CircleDotDashed,
-          url: "#",
+          url: "/bookings/pending",
           isActive: true,
         },
         {
           title: "Approved",
           icon: CircleCheck,
-          url: "#",
+          url: "/bookings/approved",
         },
         {
           title: "Add New",
           icon: CalendarPlus,
-          url: "#",
+          url: "/bookings/new",
         },
         {
           title: "Customers",
           icon: CircleUser,
-          url: "#",
+          url: "/customers",
         },
         {
           title: "Settings",
           icon: Settings,
-          url: "#",
+          url: "/settings",
         },
       ],
     },

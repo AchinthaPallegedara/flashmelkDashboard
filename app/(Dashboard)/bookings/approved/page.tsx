@@ -1,7 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
+import { columns } from "./columns";
+import { DataTable } from "./data-table";
+import { getApprovedBookings } from "@/lib/actions/booking.action";
 
-const page = () => {
-  return <div>page</div>;
-};
-
-export default page;
+export default async function Page() {
+  const result = await getApprovedBookings();
+  const booking = Array.isArray(result)
+    ? result.map((b: any) => ({
+        id: b.booking_id,
+        name: b.customer.name,
+        ...b,
+      }))
+    : [];
+  return (
+    <div className="md:mx-20">
+      <DataTable columns={columns} data={booking} />
+    </div>
+  );
+}

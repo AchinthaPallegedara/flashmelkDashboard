@@ -1,6 +1,10 @@
 "use server";
 import { db } from "@/lib/db";
-import { createCustomer, getCustomerByEmail } from "./customer.action";
+import {
+  createCustomer,
+  getCustomerByEmail,
+  updateCustomer,
+} from "./customer.action";
 
 // Fetch all bookings
 export const allBookings = async () => {
@@ -103,6 +107,12 @@ export const createNewBooking = async (data: {
         name: data.name,
         phone: data.phone,
       });
+      if (customer) {
+        customer = await updateCustomer(customer.customer_id, {
+          name: data.name,
+          phone: data.phone,
+        });
+      }
     }
 
     if (!customer) {
@@ -213,5 +223,25 @@ export const getPendingBookingsCount = async () => {
   } catch (error) {
     console.log("Error fetching pending bookings count:", error);
     return { error: "Error fetching pending bookings count" };
+  }
+};
+
+export const getApprovedBookings = async () => {
+  try {
+    const bookings = await db.booking.findMany({
+      where: {
+        status: "approved",
+      },
+      include: {
+        customer: true,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+    return bookings;
+  } catch (error) {
+    console.log("Error fetching approved bookings:", error);
+    return { error: "Error fetching approved bookings" };
   }
 };

@@ -40,3 +40,51 @@ export const createCustomer = async ({
     return null;
   }
 };
+
+export const getAllCustomers = async () => {
+  try {
+    const customers = await db.customer.findMany();
+
+    return customers;
+  } catch (error) {
+    console.log("Error fetching customers:", error);
+    return null;
+  }
+};
+
+export const updateCustomer = async (
+  id: string,
+  data: {
+    name: string;
+    phone: string;
+  }
+) => {
+  try {
+    const customer = await db.customer.update({
+      where: {
+        customer_id: id,
+      },
+      data,
+    });
+
+    return customer;
+  } catch (error) {
+    console.log("Error updating customer:", error);
+    return null;
+  }
+};
+
+export const deleteCustomer = async (id: string) => {
+  try {
+    const customer = await db.customer.delete({
+      where: {
+        customer_id: id,
+      },
+    });
+
+    return customer;
+  } catch (error) {
+    console.log("Error deleting customer:", error);
+    return null;
+  }
+};

@@ -21,9 +21,14 @@ export const addNewGallery = async (galleryData: {
         category: galleryData.category,
         main_image_url: galleryData.mainImageUrl,
         sub_images: {
-          create: galleryData.subImageUrls.map((url) => ({
-            sub_image_url: url,
-          })),
+          create: [
+            {
+              sub_image_url: galleryData.mainImageUrl, // Add the main image as the first sub-image
+            },
+            ...galleryData.subImageUrls.map((url) => ({
+              sub_image_url: url,
+            })),
+          ],
         },
       },
       include: {

@@ -121,13 +121,13 @@ const PendingCard = ({ booking }: { booking: PendingBookingType }) => {
         </div>
         <div className="flex md:justify-between md:items-end max-md:flex-col">
           <div>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 items-center">
               <User size={21} className="text-zinc-500" />
               <p>{booking.customer.name}</p>
             </div>
             <Link
               href={`mailto:${booking.customer.email}`}
-              className="flex space-x-2 hover:underline"
+              className="flex space-x-2 hover:underline items-center"
             >
               <Mail size={18} className="text-zinc-500" />
               <p>{booking.customer.email}</p>
@@ -135,7 +135,7 @@ const PendingCard = ({ booking }: { booking: PendingBookingType }) => {
 
             <Link
               href={`tel:${booking.customer.phone}`}
-              className="flex space-x-2 hover:underline"
+              className="flex space-x-2 hover:underline items-center"
             >
               <Phone size={18} className="text-zinc-500" />
               <p>{booking.customer.phone}</p>

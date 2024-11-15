@@ -76,6 +76,9 @@ export const getGalleriesbyCategory = async (
       include: {
         sub_images: true,
       },
+      orderBy: {
+        created_at: "desc",
+      },
     });
 
     return galleries;

@@ -1,6 +1,5 @@
 import {
   BookImage,
-  CalendarPlus,
   CalendarRange,
   CircleCheck,
   CircleDotDashed,
@@ -28,11 +27,11 @@ export const data = {
           icon: CircleCheck,
           url: "/bookings/approved",
         },
-        {
-          title: "Add New",
-          icon: CalendarPlus,
-          url: "/bookings/new",
-        },
+        // {
+        //   title: "Add New",
+        //   icon: CalendarPlus,
+        //   url: "/bookings/new",
+        // },
         {
           title: "Customers",
           icon: CircleUser,

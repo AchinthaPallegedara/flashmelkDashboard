@@ -29,10 +29,28 @@ import { Badge } from "./ui/badge";
 import { usePathname } from "next/navigation";
 import Logo from "./logo";
 import { useClerk } from "@clerk/nextjs";
+import { getPendingBookingsCount } from "@/lib/actions/booking.action";
+import { useEffect } from "react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const url = usePathname();
   const { signOut } = useClerk();
+  const [count, setCount] = React.useState(0);
+
+  useEffect(() => {
+    const fetchPendingBookingCount = async () => {
+      try {
+        const count = await getPendingBookingsCount();
+        if (typeof count === "number") {
+          setCount(count);
+        }
+      } catch (error) {
+        console.error("Error fetching pending booking count", error);
+      }
+    };
+
+    fetchPendingBookingCount();
+  }, []);
 
   return (
     <Sidebar {...props}>
@@ -70,8 +88,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           </a>
                         </SidebarMenuButton>
                         {item.title === "Pending to Approve" && (
-                          <SidebarMenuBadge>
-                            <Badge className="rounded-full">24</Badge>
+                          <SidebarMenuBadge
+                            className={`${count === 0 ? "hidden" : "flex"}`}
+                          >
+                            <Badge className="rounded-full">{count}</Badge>
                           </SidebarMenuBadge>
                         )}
                       </SidebarMenuItem>

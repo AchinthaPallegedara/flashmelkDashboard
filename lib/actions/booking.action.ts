@@ -150,3 +150,68 @@ export const getAllHolidays = async () => {
     return { error: "Error fetching holidays" };
   }
 };
+
+export const getAllPendingBookings = async () => {
+  try {
+    const bookings = await db.booking.findMany({
+      where: {
+        status: "pending",
+      },
+      include: {
+        customer: true,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+    return bookings;
+  } catch (error) {
+    console.log("Error fetching pending bookings:", error);
+    return { error: "Error fetching pending bookings" };
+  }
+};
+
+export const approveBooking = async (bookingId: string) => {
+  try {
+    const booking = await db.booking.update({
+      where: {
+        booking_id: bookingId,
+      },
+      data: {
+        status: "approved",
+      },
+    });
+    return booking;
+  } catch (error) {
+    console.log("Error approving booking:", error);
+    return { error: "Error approving booking" };
+  }
+};
+
+export const deleteBooking = async (bookingId: string) => {
+  try {
+    const booking = await db.booking.delete({
+      where: {
+        booking_id: bookingId,
+      },
+    });
+    return booking;
+  } catch (error) {
+    console.log("Error deleting booking:", error);
+    return { error: "Error deleting booking" };
+  }
+};
+
+export const getPendingBookingsCount = async () => {
+  try {
+    const count = await db.booking.count({
+      where: {
+        status: "pending",
+      },
+    });
+    return count;
+  } catch (error) {
+    console.log("Error fetching pending bookings count:", error);
+    return { error: "Error fetching pending bookings count" };
+  }
+};

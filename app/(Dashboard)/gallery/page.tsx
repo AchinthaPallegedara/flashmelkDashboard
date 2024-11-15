@@ -2,21 +2,22 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-
 import {
   deleteGalleryById,
   getAllGalleries,
 } from "@/lib/actions/gallery.action";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Edit, LoaderCircle, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import React from "react";
-
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GalleryCategory } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-// import { deleteGallery } from "@/app/api/upload/route";
+const SkeletonLoader = () => (
+  <div className="flex w-full h-screen items-center justify-center ">
+    <LoaderCircle className="animate-spin" />
+  </div>
+);
 
 const Page = () => {
   const router = useRouter();
@@ -30,6 +31,7 @@ const Page = () => {
       })[]
     | null
   >([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (galleryId: string) => {
@@ -38,8 +40,6 @@ const Page = () => {
     try {
       setIsDeleting(true);
       await deleteGalleryById(galleryId);
-
-      // Refresh the page or remove the item from state if using local state management
       toast.success("Gallery deleted successfully");
       router.refresh();
     } catch (error) {
@@ -56,12 +56,16 @@ const Page = () => {
         setGalleries(galleryData || []);
       } catch (error) {
         console.error("Error fetching galleries:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchGalleries();
   }, []);
-  if (!galleries)
+
+  if (isLoading) return <SkeletonLoader />;
+  if (!galleries?.length || !galleries)
     return (
       <div className="flex items-center w-full h-screen">
         No galleries added yet
@@ -70,7 +74,7 @@ const Page = () => {
 
   return (
     <div className="mx-2 md:mx-10">
-      <div className="w-full  flex justify-end my-4">
+      <div className="w-full flex justify-end my-4">
         <Link href="/gallery/new">
           <Button>
             Add New <Plus />
@@ -79,13 +83,14 @@ const Page = () => {
       </div>
       <div className="grid md:grid-cols-3 grid-cols-1 lg:grid-cols-4 mb-10">
         {galleries.map((item, index) => (
-          <div key={index} className=" relative group mx-1 mt-2">
+          <div key={index} className="relative group mx-1 mt-2">
             <img
               src={item.main_image_url}
               alt={item.title}
+              loading="lazy" // Enable lazy loading for images
               className="object-cover w-full h-full"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end ">
+            <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end">
               <h1 className="text-white text-sm text-center my-1 font-bold">
                 {item.title}
               </h1>
@@ -107,7 +112,7 @@ const Page = () => {
                   disabled={isDeleting}
                 >
                   {isDeleting ? (
-                    <span>Deleting...</span>
+                    <span className="animate-pulse">Deleting...</span>
                   ) : (
                     <>
                       <Trash2 className="w-4 h-4 mr-2" /> Delete

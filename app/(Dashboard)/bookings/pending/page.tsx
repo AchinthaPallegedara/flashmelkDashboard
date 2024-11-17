@@ -19,34 +19,34 @@ export type PendingBookingType = {
 
 const Page = async () => {
   const pendingBookings = await getAllPendingBookings();
-  if (!pendingBookings)
+  if (!pendingBookings) {
     return (
       <div className="animate-spin">
         <Loader />
       </div>
     );
-  if (!Array.isArray(pendingBookings)) {
+  } else if (!Array.isArray(pendingBookings)) {
     return <div className="text-xl text-red-500">{pendingBookings.error}</div>;
-  }
+  } else {
+    if (pendingBookings.length === 0)
+      return (
+        <div className="flex text-lg w-full h-[80vh] items-center justify-center">
+          <p>No pending bookings</p>
+        </div>
+      );
 
-  if (pendingBookings.length === 0)
     return (
-      <div className="flex text-lg w-full h-[80vh] items-center justify-center">
-        <p>No pending bookings</p>
+      <div className=" mx-5 md:mx-20 md:my-10 my-5">
+        <h1 className="text-xl font-semibold">Pending Bookings</h1>
+        <p>Here you can see all pending bookings</p>
+        <div className="mt-10 space-y-8">
+          {pendingBookings.map((booking) => (
+            <PendingCard key={booking.booking_id} booking={booking} />
+          ))}
+        </div>
       </div>
     );
-
-  return (
-    <div className=" mx-5 md:mx-20 md:my-10 my-5">
-      <h1 className="text-xl font-semibold">Pending Bookings</h1>
-      <p>Here you can see all pending bookings</p>
-      <div className="mt-10 space-y-8">
-        {pendingBookings.map((booking) => (
-          <PendingCard key={booking.booking_id} booking={booking} />
-        ))}
-      </div>
-    </div>
-  );
+  }
 };
 
 export default Page;

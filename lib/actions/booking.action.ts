@@ -5,6 +5,8 @@ import {
   getCustomerByEmail,
   updateCustomer,
 } from "./customer.action";
+import { addToGoogleCalendar } from "./GoogleCalendar";
+import { CreateBookingEmail } from "@/app/api/send/route";
 
 // Fetch all bookings
 export const allBookings = async () => {
@@ -130,6 +132,14 @@ export const createNewBooking = async (data: {
         status: "pending",
       },
     });
+    try {
+      await CreateBookingEmail({
+        customerName: data.name,
+        cus_email: data.email,
+      });
+    } catch (error) {
+      console.log("Error sending booking email:", error);
+    }
 
     return booking;
   } catch (error) {
@@ -191,10 +201,24 @@ export const approveBooking = async (bookingId: string) => {
         status: "approved",
       },
     });
-    return booking;
+
+    let calendarEvent = null;
+    try {
+      // Add the approved booking to Google Calendar
+      calendarEvent = await addToGoogleCalendar(booking);
+    } catch (calendarError) {
+      console.error("Error adding to Google Calendar:", calendarError);
+      // We'll continue even if calendar addition fails
+    }
+
+    return { booking, calendarEvent };
   } catch (error) {
-    console.log("Error approving booking:", error);
-    return { error: "Error approving booking" };
+    console.error("Error approving booking:", error);
+    if (error instanceof Error) {
+      return { error: `Error approving booking: ${error.message}` };
+    } else {
+      return { error: "Error approving booking: Unknown error" };
+    }
   }
 };
 

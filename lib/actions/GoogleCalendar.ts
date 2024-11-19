@@ -3,7 +3,7 @@
 import { google } from "googleapis";
 import { Booking } from "@prisma/client";
 import { db } from "@/lib/db";
-import { ConfirmBookingEmail } from "@/app/api/send/route";
+import { ConfirmBookingEmail } from "./email.action";
 
 const calendar = google.calendar({ version: "v3" });
 

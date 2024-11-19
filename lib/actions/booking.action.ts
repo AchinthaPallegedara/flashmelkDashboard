@@ -6,7 +6,7 @@ import {
   updateCustomer,
 } from "./customer.action";
 import { addToGoogleCalendar } from "./GoogleCalendar";
-import { CreateBookingEmail } from "@/app/api/send/route";
+import { CreateBookingEmail } from "./email.action";
 
 // Fetch all bookings
 export const allBookings = async () => {

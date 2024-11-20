@@ -6,7 +6,7 @@ import {
   CircleUser,
   ImagePlus,
   Images,
-  Settings,
+  Tent,
 } from "lucide-react";
 
 export const data = {
@@ -38,9 +38,9 @@ export const data = {
           url: "/customers",
         },
         {
-          title: "Settings",
-          icon: Settings,
-          url: "/settings",
+          title: "Holidays",
+          icon: Tent,
+          url: "/holidays",
         },
       ],
     },

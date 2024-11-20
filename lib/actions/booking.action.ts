@@ -7,6 +7,7 @@ import {
 } from "./customer.action";
 import { addToGoogleCalendar } from "./GoogleCalendar";
 import { CreateBookingEmail } from "./email.action";
+import { format } from "date-fns";
 
 // Fetch all bookings
 export const allBookings = async () => {
@@ -269,3 +270,222 @@ export const getApprovedBookings = async () => {
     return { error: "Error fetching approved bookings" };
   }
 };
+
+export async function getBookingStats() {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // -5 to include current month
+
+  const bookings = await db.booking.findMany({
+    where: {
+      created_at: {
+        gte: sixMonthsAgo,
+      },
+    },
+    select: {
+      created_at: true,
+    },
+  });
+
+  const monthlyBookings = bookings.reduce(
+    (acc: Record<string, number>, booking) => {
+      const date = new Date(booking.created_at);
+      const monthYear = `${date.getMonth()}-${date.getFullYear()}`;
+      acc[monthYear] = (acc[monthYear] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  const last6Months = [];
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  // Generate data for last 6 months
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthYear = `${date.getMonth()}-${date.getFullYear()}`;
+
+    last6Months.push({
+      month: monthNames[date.getMonth()],
+      year: date.getFullYear(),
+      desktop: monthlyBookings[monthYear] || 0,
+    });
+  }
+
+  return last6Months;
+}
+
+export async function getPackageBookingStats() {
+  const packageTypes = [
+    "I-basic",
+    "I-standard",
+    "I-professional",
+    "V-basic",
+    "V-standard",
+    "V-professional",
+  ];
+
+  const stats = await Promise.all(
+    packageTypes.map(async (packageType) => {
+      const count = await db.booking.count({
+        where: {
+          package_name: packageType,
+        },
+      });
+
+      return {
+        package: packageType,
+        bookings: count,
+      };
+    })
+  );
+
+  // Map the stats to transform package names
+  const transformedStats = stats.map(({ package: packageType, bookings }) => {
+    const [prefix, suffix] = packageType.split("-");
+    const transformedPackage = `${prefix}-${suffix[0].toUpperCase()}`;
+    return {
+      package: transformedPackage,
+      bookings,
+    };
+  });
+
+  return transformedStats;
+}
+
+export async function getDashboardStats() {
+  const now = new Date();
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1); // Start of last month
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0); // End of last month
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1); // Start of current month
+
+  const [
+    nextBooking,
+    currentActiveBookingsCount,
+    lastMonthActiveBookingsCount,
+    currentNewClientsCount,
+    lastMonthNewClientsCount,
+    currentTotalBookingsCount,
+    lastMonthTotalBookingsCount,
+  ] = await Promise.all([
+    // Fetch the next upcoming booking
+    db.booking.findFirst({
+      where: {
+        status: "approved",
+        date: {
+          gte: now.toISOString(), // Only fetch future bookings
+        },
+      },
+      orderBy: { date: "asc" }, // Adjust field name as needed
+    }),
+    // Count active bookings this month
+    db.booking.count({
+      where: {
+        status: "approved",
+        date: {
+          gte: currentMonthStart.toISOString(),
+          lte: now.toISOString(), // Current month only
+        },
+      },
+    }),
+    // Count active bookings last month
+    db.booking.count({
+      where: {
+        status: "approved",
+        date: {
+          gte: lastMonthStart.toISOString(),
+          lte: lastMonthEnd.toISOString(), // Last month only
+        },
+      },
+    }),
+    // Count new clients this month
+    db.customer.count({
+      where: {
+        created_at: {
+          gte: currentMonthStart.toISOString(),
+          lte: now.toISOString(), // Current month only
+        },
+      },
+    }),
+    // Count new clients last month
+    db.customer.count({
+      where: {
+        created_at: {
+          gte: lastMonthStart.toISOString(),
+          lte: lastMonthEnd.toISOString(), // Last month only
+        },
+      },
+    }),
+    // Count total bookings this month
+    db.booking.count({
+      where: {
+        date: {
+          gte: currentMonthStart.toISOString(),
+          lte: now.toISOString(), // Current month only
+        },
+      },
+    }),
+    // Count total bookings last month
+    db.booking.count({
+      where: {
+        date: {
+          gte: lastMonthStart.toISOString(),
+          lte: lastMonthEnd.toISOString(), // Last month only
+        },
+      },
+    }),
+  ]);
+
+  // Calculate percentage change
+  const getPercentageChange = (current: number, previous: number): string => {
+    if (previous === 0) return "+100%"; // Avoid division by zero
+    const change = ((current - previous) / previous) * 100;
+    return `${change > 0 ? "+" : ""}${change.toFixed(1)}%`;
+  };
+
+  return {
+    nextBooking: nextBooking
+      ? {
+          date: nextBooking.date
+            ? format(new Date(nextBooking.date), "EEE, MMM d") // Ensure `startDate` is a valid date
+            : "No date available",
+          time: `${nextBooking.start_time} to ${nextBooking.end_time}`, // Use time strings directly
+          package: nextBooking.package_name,
+        }
+      : null,
+    activeBookings: {
+      count: currentActiveBookingsCount,
+      change: getPercentageChange(
+        currentActiveBookingsCount,
+        lastMonthActiveBookingsCount
+      ),
+    },
+    newClients: {
+      count: currentNewClientsCount,
+      change: getPercentageChange(
+        currentNewClientsCount,
+        lastMonthNewClientsCount
+      ),
+    },
+    totalBookings: {
+      count: currentTotalBookingsCount,
+      change: getPercentageChange(
+        currentTotalBookingsCount,
+        lastMonthTotalBookingsCount
+      ),
+    },
+  };
+}

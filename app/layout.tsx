@@ -23,10 +23,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${poppins.variable}  antialiased`}>
-          {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
-          {children}
-          <Toaster />
-          {/* </ThemeProvider> */}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+            <Toaster />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -7,7 +7,7 @@ export const checkHolidayByDate = async (date: string) => {
       where: {
         date: date,
         type: {
-          in: ["full-day", "time-slot"],
+          in: ["full-day", "half-day"],
         },
       },
     });
@@ -31,7 +31,7 @@ export const checkExistingHoliday = async (
         OR: [
           { type: "full-day" },
           {
-            type: "time-slot",
+            type: "half-day",
             start_time: {
               lte: end_time,
             },
@@ -74,6 +74,56 @@ export const createNewHoliday = async ({
     return holiday;
   } catch (error) {
     console.log("Error creating holiday:", error);
+    return null;
+  }
+};
+
+const deletePassedHolidays = async () => {
+  try {
+    const holidays = await db.holiday.findMany({
+      where: {
+        date: {
+          lt: new Date().toISOString(),
+        },
+      },
+    });
+
+    if (holidays.length > 0) {
+      await db.holiday.deleteMany({
+        where: {
+          date: {
+            lt: new Date().toISOString(),
+          },
+        },
+      });
+    }
+  } catch (error) {
+    console.log("Error deleting passed holidays:", error);
+  }
+};
+
+export const getAllHolidays = async () => {
+  try {
+    deletePassedHolidays();
+    const holidays = await db.holiday.findMany();
+    return holidays;
+  } catch (error) {
+    console.log("Error fetching holidays:", error);
+    return null;
+  }
+};
+
+export const deleteHoliday = async (holidayId: string) => {
+  try {
+    const holiday = await db.holiday.delete({
+      where: {
+        holiday_id: holidayId,
+      },
+    });
+
+    return holiday;
+  } catch (error) {
+    console.log("Error deleting holiday:", error);
     return null;
   }
 };

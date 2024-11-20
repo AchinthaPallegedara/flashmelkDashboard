@@ -1,7 +1,7 @@
 import { HolidayAddForm } from "@/components/holiday-add-form";
 import { HolidayListWrapper } from "@/components/holiday-list-wrapper";
 import { Suspense } from "react";
-
+export const dynamic = "force-dynamic";
 export default function HolidayManagement() {
   return (
     <div className="md:mx-20 mt-10">

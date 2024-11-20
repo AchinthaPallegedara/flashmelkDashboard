@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { ConfirmBookingEmail } from "./email.action";
 
 const calendar = google.calendar({ version: "v3" });
-export const dynamic = "force-dynamic";
+
 const auth = new google.auth.JWT({
   email: process.env.GOOGLE_CLIENT_EMAIL,
   key: process.env.GOOGLE_PRIVATE_KEY,

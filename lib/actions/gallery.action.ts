@@ -2,7 +2,7 @@
 
 import { deleteGallery } from "@/lib/s3";
 import { db } from "@/lib/db";
-export const dynamic = "force-dynamic";
+
 export const addNewGallery = async (galleryData: {
   name: string;
   category:

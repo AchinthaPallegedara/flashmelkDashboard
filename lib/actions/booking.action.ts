@@ -10,7 +10,7 @@ import { CreateBookingEmail } from "./email.action";
 import { format } from "date-fns";
 
 // Fetch all bookings
-export const dynamic = "force-dynamic";
+
 export const allBookings = async () => {
   try {
     const bookings = await db.booking.findMany({

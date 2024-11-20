@@ -1,6 +1,6 @@
 "use server";
 import { db } from "@/lib/db";
-
+export const dynamic = "force-dynamic";
 export const checkHolidayByDate = async (date: string) => {
   try {
     const holiday = await db.holiday.findFirst({

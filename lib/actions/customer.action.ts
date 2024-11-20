@@ -1,6 +1,6 @@
 "use server";
 import { db } from "@/lib/db";
-
+export const dynamic = "force-dynamic";
 export const getCustomerByEmail = async (email: string) => {
   try {
     const customer = await db.customer.findFirst({

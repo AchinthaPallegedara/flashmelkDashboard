@@ -16,7 +16,7 @@ export type PendingBookingType = {
     phone: string;
   };
 };
-
+export const dynamic = "force-dynamic";
 const Page = async () => {
   const pendingBookings = await getAllPendingBookings();
   if (!pendingBookings) {

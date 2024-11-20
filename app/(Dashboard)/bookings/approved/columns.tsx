@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// import { deleteCustomer } from "@/lib/models/customer.model";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteBooking } from "@/lib/actions/booking.action";
@@ -27,9 +26,9 @@ import { deleteBooking } from "@/lib/actions/booking.action";
 const BookingActions = ({ booking }: { booking: Booking }) => {
   const router = useRouter();
 
-  function deleteACustomer(id: string) {
+  async function deleteACustomer(id: string) {
     try {
-      deleteBooking(id);
+      await deleteBooking(id);
       toast.success("Booking deleted successfully");
       router.refresh();
     } catch (error) {

@@ -3,6 +3,7 @@ import React from "react";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { getApprovedBookings } from "@/lib/actions/booking.action";
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const result = await getApprovedBookings();

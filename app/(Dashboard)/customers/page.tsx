@@ -3,7 +3,7 @@ import React from "react";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { getAllCustomers } from "@/lib/actions/customer.action";
-
+export const dynamic = "force-dynamic";
 export default async function Page() {
   const result = await getAllCustomers();
 

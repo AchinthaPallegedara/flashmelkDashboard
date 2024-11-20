@@ -13,6 +13,7 @@ import { GalleryCategory } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+export const dynamic = "force-dynamic";
 const SkeletonLoader = () => (
   <div className="flex w-full h-screen items-center justify-center ">
     <LoaderCircle className="animate-spin" />

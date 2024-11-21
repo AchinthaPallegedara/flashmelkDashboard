@@ -63,7 +63,7 @@ export function PackageStatsChart({ data }: PackageStatsChartProps) {
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Bar
               dataKey="bookings"
-              fill="var(--color-desktop)"
+              fill="var(--color-bookings)"
               radius={[8, 8, 0, 0]}
             />
           </BarChart>

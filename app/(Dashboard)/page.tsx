@@ -10,10 +10,12 @@ import {
 import { CalendarDays, Users, BarChart, CalendarRange } from "lucide-react";
 import React from "react";
 
+export const dynamic = "force-dynamic";
 const Home = async () => {
   const bookingData = await getBookingStats();
   const packageStats = await getPackageBookingStats();
   const dashboardData = await getDashboardStats();
+
   return (
     <div className="md:mx-20 mt-10">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -41,7 +43,7 @@ const Home = async () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData.activeBookings.count}
+              {dashboardData.futureActiveBookings}
             </div>
             <p className="text-xs text-muted-foreground">
               {dashboardData.activeBookings.change} from last month
@@ -75,7 +77,7 @@ const Home = async () => {
               {dashboardData.totalBookings.count}
             </div>
             <p className="text-xs text-muted-foreground">
-              {dashboardData.totalBookings.change} from last month
+              {dashboardData.totalBookingsByMonth.change} from last month
             </p>
           </CardContent>
         </Card>

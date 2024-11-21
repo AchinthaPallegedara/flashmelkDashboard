@@ -369,6 +369,8 @@ export async function getPackageBookingStats() {
 
 export async function getDashboardStats() {
   const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Start of today
+  const currentTime = now.toTimeString().split(" ")[0]; // Current time in HH:mm:ss
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1); // Start of last month
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0); // End of last month
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1); // Start of current month
@@ -381,25 +383,53 @@ export async function getDashboardStats() {
     lastMonthNewClientsCount,
     currentTotalBookingsCount,
     lastMonthTotalBookingsCount,
+    futureActiveBookingsCount, // New count for future active bookings
+    totalBookingsCount, // New total bookings count
   ] = await Promise.all([
     // Fetch the next upcoming booking
     db.booking.findFirst({
       where: {
         status: "approved",
-        date: {
-          gte: now.toISOString(), // Only fetch future bookings
-        },
+        OR: [
+          {
+            date: today.toISOString(),
+            start_time: {
+              gt: currentTime, // Today's bookings after the current time
+            },
+          },
+          {
+            date: {
+              gt: today.toISOString(), // Future bookings strictly after today
+            },
+          },
+        ],
       },
-      orderBy: { date: "asc" }, // Adjust field name as needed
+      orderBy: [
+        { date: "asc" }, // Sort by date
+        { start_time: "asc" }, // Then by start time
+      ],
     }),
-    // Count active bookings this month
+    // Count active bookings this month (including ongoing bookings today)
     db.booking.count({
       where: {
         status: "approved",
-        date: {
-          gte: currentMonthStart.toISOString(),
-          lte: now.toISOString(), // Current month only
-        },
+        OR: [
+          {
+            date: today.toISOString(),
+            start_time: {
+              lte: currentTime, // Started already
+            },
+            end_time: {
+              gt: currentTime, // Still ongoing
+            },
+          },
+          {
+            date: {
+              gte: currentMonthStart.toISOString(),
+              lt: today.toISOString(), // Past dates in the current month
+            },
+          },
+        ],
       },
     }),
     // Count active bookings last month
@@ -448,6 +478,17 @@ export async function getDashboardStats() {
         },
       },
     }),
+    // Count future active bookings
+    db.booking.count({
+      where: {
+        status: "approved",
+        date: {
+          gt: today.toISOString(), // Strictly future dates
+        },
+      },
+    }),
+    // Count all bookings (total bookings)
+    db.booking.count({}),
   ]);
 
   // Calculate percentage change
@@ -457,14 +498,28 @@ export async function getDashboardStats() {
     return `${change > 0 ? "+" : ""}${change.toFixed(1)}%`;
   };
 
+  // Determine the human-readable date for the next booking
+  let nextBookingDateDisplay = null;
+  if (nextBooking) {
+    const nextBookingDate = new Date(nextBooking.date);
+    if (nextBookingDate.toDateString() === today.toDateString()) {
+      nextBookingDateDisplay = "Today";
+    } else if (
+      nextBookingDate.toDateString() ===
+      new Date(today.getTime() + 24 * 60 * 60 * 1000).toDateString()
+    ) {
+      nextBookingDateDisplay = "Tomorrow";
+    } else {
+      nextBookingDateDisplay = format(nextBookingDate, "EEE, MMM d"); // Example: Wed, Nov 23
+    }
+  }
+
   return {
     nextBooking: nextBooking
       ? {
-          date: nextBooking.date
-            ? format(new Date(nextBooking.date), "EEE, MMM d") // Ensure `startDate` is a valid date
-            : "No date available",
+          date: nextBookingDateDisplay || "No date available",
           time: `${nextBooking.start_time} to ${nextBooking.end_time}`, // Use time strings directly
-          package: nextBooking.package_name,
+          package: nextBooking.package_name || "No package available",
         }
       : null,
     activeBookings: {
@@ -474,6 +529,10 @@ export async function getDashboardStats() {
         lastMonthActiveBookingsCount
       ),
     },
+    futureActiveBookings: futureActiveBookingsCount, // Include in the response
+    totalBookings: {
+      count: totalBookingsCount, // Total bookings
+    },
     newClients: {
       count: currentNewClientsCount,
       change: getPercentageChange(
@@ -481,7 +540,7 @@ export async function getDashboardStats() {
         lastMonthNewClientsCount
       ),
     },
-    totalBookings: {
+    totalBookingsByMonth: {
       count: currentTotalBookingsCount,
       change: getPercentageChange(
         currentTotalBookingsCount,

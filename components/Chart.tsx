@@ -128,9 +128,9 @@ export function ChartComponent({ data }: BookingChartProps) {
             <Area
               dataKey="desktop"
               type="natural"
-              fill="var(--chart-1)"
+              fill="var(--color-desktop)"
               fillOpacity={0.4}
-              stroke="var(--chart-1)"
+              stroke="var(--color-desktop)"
             />
           </AreaChart>
         </ChartContainer>

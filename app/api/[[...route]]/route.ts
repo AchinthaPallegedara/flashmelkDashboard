@@ -56,6 +56,7 @@ const BookingSchema = z.object({
     .string()
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format"),
   endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format"),
+  note: z.optional(z.string()),
   packageType: z.enum([
     "P-basic",
     "P-standard",

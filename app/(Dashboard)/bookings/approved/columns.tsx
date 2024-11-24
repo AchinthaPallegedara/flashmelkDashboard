@@ -46,6 +46,15 @@ const BookingActions = ({ booking }: { booking: Booking }) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {booking.note && (
+          <>
+            <DropdownMenuLabel>Note</DropdownMenuLabel>
+            <DropdownMenuItem>
+              <p>{booking.note}</p>
+            </DropdownMenuItem>
+          </>
+        )}
+
         <DropdownMenuLabel>Customer Details</DropdownMenuLabel>
         <DropdownMenuItem
           onClick={() => {
@@ -90,6 +99,7 @@ export type Booking = {
   start_time: string;
   end_time: string;
   package_name: string;
+  note?: string;
   customer: {
     customer_id: string;
     name: string;

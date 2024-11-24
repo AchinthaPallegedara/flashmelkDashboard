@@ -33,6 +33,7 @@ export async function addToGoogleCalendar(booking: Booking) {
       - Phone: ${customer.phone}
       Booking Details:
       - Package: ${booking.package_name}
+      - Note: ${booking.note}
       `,
       start: {
         dateTime: `${booking.date}T${booking.start_time}:00`,

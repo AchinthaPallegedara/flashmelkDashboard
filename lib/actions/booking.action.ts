@@ -88,13 +88,16 @@ export const createNewBooking = async (data: {
   phone: string;
   startTime: string;
   endTime: string;
+  note?: string;
   packageType:
-    | "I-basic"
-    | "I-standard"
-    | "I-professional"
+    | "P-basic"
+    | "P-standard"
+    | "P-professional"
     | "V-basic"
     | "V-standard"
-    | "V-professional";
+    | "V-professional"
+    | "C-professional"
+    | "C-platinum";
 }) => {
   try {
     // Check for any conflicts before creating the booking
@@ -132,6 +135,7 @@ export const createNewBooking = async (data: {
         package_name: data.packageType,
         customer_id: customer.customer_id,
         status: "pending",
+        note: data.note,
       },
     });
     try {
@@ -331,9 +335,9 @@ export async function getBookingStats() {
 
 export async function getPackageBookingStats() {
   const packageTypes = [
-    "I-basic",
-    "I-standard",
-    "I-professional",
+    "P-basic",
+    "P-standard",
+    "P-professional",
     "V-basic",
     "V-standard",
     "V-professional",

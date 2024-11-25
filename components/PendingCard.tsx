@@ -17,7 +17,13 @@ function parsePackageName(packageName: string): {
   const [type, level] = packageName.split("-") as [string, string];
 
   const typeDescription =
-    type === "I" ? "Image" : type === "V" ? "Video" : "CYC Wall";
+    type === "I"
+      ? "Image"
+      : type === "V"
+      ? "Video"
+      : type === "C"
+      ? "CYC Wall"
+      : "Session";
   const sessionDescription = `${capitalize(level)} Session`;
 
   return { session: sessionDescription, type: typeDescription };

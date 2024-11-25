@@ -97,7 +97,18 @@ export const createNewBooking = async (data: {
     | "V-standard"
     | "V-professional"
     | "C-professional"
-    | "C-platinum";
+    | "C-platinum"
+    | "Individual-QuickSession"
+    | "Individual-Branding&Creative"
+    | "Individual-Executive"
+    | "FamilySession"
+    | "Graduation-ALLINCLUSIVESession"
+    | "Family-Maternity"
+    | "Family-ALLINCLUSIVESession"
+    | "Graduation-QuickSession"
+    | "Graduation-StandardSession"
+    | "ModelPortfolio-Pro"
+    | "ModelPortfolio-Standard";
 }) => {
   try {
     // Check for any conflicts before creating the booking

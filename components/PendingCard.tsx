@@ -17,8 +17,8 @@ function parsePackageName(packageName: string): {
   const [type, level] = packageName.split("-") as [string, string];
 
   const typeDescription =
-    type === "I"
-      ? "Image"
+    type === "P"
+      ? "Photo"
       : type === "V"
       ? "Video"
       : type === "C"

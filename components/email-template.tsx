@@ -21,6 +21,8 @@ interface CustomerConfirmSendEmailProps {
   BookingDate: string;
   BookingStartTime: string;
   BookingEndTime: string;
+  BookingType: string;
+  BookingPrice: string;
 }
 
 interface EmailTemplateProps {
@@ -37,10 +39,11 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
 
 export const CustomerConfirmBookingSendEmail = ({
   userFirstname,
-
+  BookingType,
   BookingDate,
   BookingStartTime,
   BookingEndTime,
+  BookingPrice,
 }: CustomerConfirmSendEmailProps) => (
   <Html>
     <Head />
@@ -58,6 +61,8 @@ export const CustomerConfirmBookingSendEmail = ({
         <Text style={paragraph}>
           Your booking has been confirmed. Here are the details:
           <ul>
+            <li style={paragraph}>Session: {BookingType}</li>
+            <li style={paragraph}>Price:Rs.{BookingPrice}</li>
             <li style={paragraph}>Booking Date: {BookingDate}</li>
             <li style={paragraph}>Start Time: {BookingStartTime}</li>
             <li style={paragraph}>End Time: {BookingEndTime}</li>
@@ -78,10 +83,18 @@ export const CustomerConfirmBookingSendEmail = ({
           The Flashmelk team
         </Text>
         <Hr style={hr} />
-        <Text style={footer}>
+        <Text style={newFooter}>
           © 2024 Flashmelk. All rights reserved. Powered by DSLR Rent Lk.
         </Text>
-        <Text style={footer}>Design & Developed by Claviq</Text>
+        <Text style={newFooter}>
+          Design & Developed by{" "}
+          <a
+            href="https://claviq.com"
+            style={{ color: "#8898aa", textDecoration: "none" }}
+          >
+            Claviq
+          </a>
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -123,10 +136,18 @@ export const CustomerSendEmail = ({
           The Flashmelk team
         </Text>
         <Hr style={hr} />
-        <Text style={footer}>
+        <Text style={newFooter}>
           © 2024 Flashmelk. All rights reserved. Powered by DSLR Rent Lk.
         </Text>
-        <Text style={footer}>Design & Developed by Claviq</Text>
+        <Text style={newFooter}>
+          Design & Developed by{" "}
+          <a
+            href="https://claviq.com"
+            style={{ color: "#8898aa", textDecoration: "none" }}
+          >
+            Claviq
+          </a>
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -209,4 +230,10 @@ const hr = {
 const footer = {
   color: "#8898aa",
   fontSize: "12px",
+};
+
+const newFooter = {
+  color: "#8898aa",
+  fontSize: "12px",
+  lineHeight: "14px",
 };

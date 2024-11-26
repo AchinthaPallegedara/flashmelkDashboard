@@ -67,6 +67,7 @@ export async function addToGoogleCalendar(booking: Booking) {
         BookingDate: booking.date,
         BookingStartTime: booking.start_time,
         BookingEndTime: booking.end_time,
+        BookingType: booking.package_name,
       });
     } catch (error) {
       console.error("Error sending confirmation email:", error);

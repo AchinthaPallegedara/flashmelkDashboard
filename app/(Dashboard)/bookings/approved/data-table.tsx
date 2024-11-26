@@ -35,12 +35,16 @@ import {
 import { GitCommitHorizontal, Search } from "lucide-react";
 import { DataTablePagination } from "@/components/Pagination";
 
-interface DataTableProps<TData, TValue> {
+interface BookingData {
+  date: string; // Ensure the date property is a string
+}
+
+interface DataTableProps<TData extends BookingData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends BookingData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -140,23 +144,45 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                // Parse the booking date
+                const bookingDate = new Date(row.original.date); // "2024-11-30"
+
+                // Normalize the dates to midnight for accurate comparison
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Today's date at midnight
+                bookingDate.setHours(0, 0, 0, 0); // Booking date at midnight
+
+                // Determine the row class based on the booking date
+                let rowClass = ""; // Default class
+                if (bookingDate < today) {
+                  rowClass = "bg-red-100/70"; // Past bookings
+                } else if (bookingDate.getTime() === today.getTime()) {
+                  rowClass = "bg-green-100/70"; // Today's bookings
+                } else {
+                  rowClass = "bg-blue-100/70"; // Future bookings
+                }
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={rowClass} // Apply the calculated class
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell

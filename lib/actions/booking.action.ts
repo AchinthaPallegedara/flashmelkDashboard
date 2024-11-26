@@ -277,7 +277,7 @@ export const getApprovedBookings = async () => {
         customer: true,
       },
       orderBy: {
-        created_at: "desc",
+        date: "desc",
       },
     });
     return bookings;
@@ -352,6 +352,8 @@ export async function getPackageBookingStats() {
     "V-basic",
     "V-standard",
     "V-professional",
+    "C-professional",
+    "C-platinum",
   ];
 
   const stats = await Promise.all(

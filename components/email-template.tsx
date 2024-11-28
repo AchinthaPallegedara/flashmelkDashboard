@@ -15,6 +15,12 @@ import {
 interface CustomerSendEmailProps {
   userFirstname: string;
 }
+interface ContactAdminEmailProps {
+  userFirstname: string;
+  message: string;
+  customerName: string;
+  cus_email: string;
+}
 interface CustomerConfirmSendEmailProps {
   userFirstname: string;
   bookingId: string;
@@ -152,6 +158,58 @@ export const CustomerSendEmail = ({
     </Body>
   </Html>
 );
+export const CustomerContactEmail = ({
+  userFirstname,
+}: CustomerSendEmailProps) => (
+  <Html>
+    <Head />
+    <Preview>
+      We have received your message and we will get back to you soon
+    </Preview>
+    <Body style={main}>
+      <Container style={container}>
+        <Img
+          src={`https://img.flashmelk.com/flashmeemaillogo.png`}
+          width="170"
+          height="50"
+          alt="flashmelk"
+          style={logo}
+        />
+        <Text style={paragraph}>Hi {userFirstname},</Text>
+        <Text style={paragraph}>
+          We have received your message and we will get back to you soon.
+        </Text>
+        <Text style={paragraph}>
+          If you have any questions or need further assistance, please feel free
+          to contact us at any time.
+        </Text>
+        <Section style={btnContainer}>
+          <Button style={button} href="tel:+94777201502">
+            Call Now
+          </Button>
+        </Section>
+        <Text style={paragraph}>
+          Best,
+          <br />
+          The Flashmelk team
+        </Text>
+        <Hr style={hr} />
+        <Text style={newFooter}>
+          © 2024 Flashmelk. All rights reserved. Powered by DSLR Rent Lk.
+        </Text>
+        <Text style={newFooter}>
+          Design & Developed by{" "}
+          <a
+            href="https://claviq.com"
+            style={{ color: "#8898aa", textDecoration: "none" }}
+          >
+            Claviq
+          </a>
+        </Text>
+      </Container>
+    </Body>
+  </Html>
+);
 
 export const AdminSendEmail = ({ userFirstname }: CustomerSendEmailProps) => (
   <Html>
@@ -187,6 +245,39 @@ export const AdminSendEmail = ({ userFirstname }: CustomerSendEmailProps) => (
   </Html>
 );
 
+export const ContactAdminEmail = ({
+  userFirstname,
+  message,
+  customerName,
+  cus_email,
+}: ContactAdminEmailProps) => (
+  <Html>
+    <Head />
+    <Preview>New Booking Requsted</Preview>
+    <Body style={main}>
+      <Container style={container}>
+        <Img
+          src={`https://img.flashmelk.com/flashmeemaillogo.png`}
+          width="170"
+          height="50"
+          alt="flashmelk"
+          style={logo}
+        />
+        <Text style={paragraph}>Hi {userFirstname},</Text>
+        <Text style={paragraph}>
+          You have a new message from {customerName} ({cus_email}) with the
+          following message:
+        </Text>
+        <Text style={paragraph}>{message}</Text>
+
+        <Hr style={hr} />
+        <Text style={footer}>
+          © 2024 Flashmelk. All rights reserved. Powered by DSLR Rent Lk.
+        </Text>
+      </Container>
+    </Body>
+  </Html>
+);
 const main = {
   backgroundColor: "#ffffff",
   fontFamily:

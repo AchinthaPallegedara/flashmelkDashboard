@@ -46,8 +46,9 @@ export async function addToGoogleCalendar(booking: Booking) {
       reminders: {
         useDefault: false,
         overrides: [
-          { method: "email", minutes: 24 * 60 },
+          { method: "email", minutes: 60 },
           { method: "popup", minutes: 60 },
+          { method: "popup", minutes: 10 },
         ],
       },
     };
@@ -59,6 +60,12 @@ export async function addToGoogleCalendar(booking: Booking) {
     });
 
     console.log("Event created: %s", response.data.htmlLink);
+    // Save the event ID to the booking record
+    await db.booking.update({
+      where: { booking_id: booking.booking_id },
+      data: { google_event_id: response.data.id },
+    });
+
     try {
       await ConfirmBookingEmail({
         customerName: customer.name,
@@ -82,6 +89,41 @@ export async function addToGoogleCalendar(booking: Booking) {
       );
     } else {
       throw new Error("Failed to add event to Google Calendar: Unknown error");
+    }
+  }
+}
+
+export async function deleteFromGoogleCalendar(bookingId: string) {
+  try {
+    // Fetch the booking and its associated Google Calendar event ID
+    const booking = await db.booking.findUnique({
+      where: { booking_id: bookingId },
+    });
+
+    if (!booking || !booking.google_event_id) {
+      throw new Error("Booking or Google Calendar event ID not found");
+    }
+
+    // Delete the event from Google Calendar
+    await calendar.events.delete({
+      auth: auth,
+      calendarId: process.env.GOOGLE_CALENDAR_ID, // Your calendar ID
+      eventId: booking.google_event_id,
+    });
+
+    console.log("Event deleted successfully from Google Calendar");
+
+    return { success: true, message: "Event deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting event from Google Calendar:", error);
+    if (error instanceof Error) {
+      throw new Error(
+        `Failed to delete event from Google Calendar: ${error.message}`
+      );
+    } else {
+      throw new Error(
+        "Failed to delete event from Google Calendar: Unknown error"
+      );
     }
   }
 }

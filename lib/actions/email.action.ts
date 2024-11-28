@@ -1,6 +1,8 @@
 import {
   AdminSendEmail,
+  ContactAdminEmail,
   CustomerConfirmBookingSendEmail,
+  CustomerContactEmail,
   CustomerSendEmail,
 } from "@/components/email-template";
 import { Resend } from "resend";
@@ -133,6 +135,46 @@ export async function CreateBookingEmail({
         to: [cus_email],
         subject: "Booking Submission",
         react: CustomerSendEmail({ userFirstname: customerName }),
+      },
+    ]);
+
+    if (error) {
+      return Response.json({ error }, { status: 500 });
+    }
+
+    return Response.json(data);
+  } catch (error) {
+    return Response.json({ error }, { status: 500 });
+  }
+}
+
+export async function ContactformEmail({
+  customerName,
+  cus_email,
+  message,
+}: {
+  customerName: string;
+  cus_email: string;
+  message: string;
+}) {
+  try {
+    const { data, error } = await resend.batch.send([
+      {
+        from: "Flashmelk <info@flashmelk.com>",
+        to: ["flashmelkinfo@gmail.com"],
+        subject: "New Contact Form Submission",
+        react: ContactAdminEmail({
+          userFirstname: "Vinod",
+          message: message,
+          customerName: customerName,
+          cus_email: cus_email,
+        }),
+      },
+      {
+        from: "Flashmelk <info@flashmelk.com>",
+        to: [cus_email],
+        subject: "Contact Form Submission",
+        react: CustomerContactEmail({ userFirstname: customerName }),
       },
     ]);
 

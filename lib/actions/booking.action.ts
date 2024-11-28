@@ -5,7 +5,10 @@ import {
   getCustomerByEmail,
   updateCustomer,
 } from "./customer.action";
-import { addToGoogleCalendar } from "./GoogleCalendar";
+import {
+  addToGoogleCalendar,
+  deleteFromGoogleCalendar,
+} from "./GoogleCalendar";
 import { CreateBookingEmail } from "./email.action";
 import { format } from "date-fns";
 
@@ -241,12 +244,14 @@ export const approveBooking = async (bookingId: string) => {
 
 export const deleteBooking = async (bookingId: string) => {
   try {
-    const booking = await db.booking.delete({
+    await deleteFromGoogleCalendar(bookingId);
+    await db.booking.delete({
       where: {
         booking_id: bookingId,
       },
     });
-    return booking;
+    console.log("Booking and associated calendar event deleted successfully");
+    return { success: true, message: "Booking and calendar event deleted" };
   } catch (error) {
     console.log("Error deleting booking:", error);
     return { error: "Error deleting booking" };

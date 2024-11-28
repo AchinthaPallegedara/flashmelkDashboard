@@ -26,7 +26,7 @@ import { deleteBooking } from "@/lib/actions/booking.action";
 const BookingActions = ({ booking }: { booking: Booking }) => {
   const router = useRouter();
 
-  async function deleteACustomer(id: string) {
+  async function deleteABooking(id: string) {
     try {
       await deleteBooking(id);
       toast.success("Booking deleted successfully");
@@ -81,7 +81,7 @@ const BookingActions = ({ booking }: { booking: Booking }) => {
         <DropdownMenuItem
           className="flex items-center justify-center space-x-2 text-red-900 bg-red-300 hover:bg-red-400"
           onClick={() => {
-            deleteACustomer(booking.id);
+            deleteABooking(booking.id);
           }}
         >
           Delete

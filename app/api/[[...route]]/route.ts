@@ -19,6 +19,7 @@ import {
   checkHolidayByDate,
   createNewHoliday,
 } from "@/lib/actions/holiday.action";
+import { ContactformEmail } from "@/lib/actions/email.action";
 
 const app = new Hono().basePath("/api");
 
@@ -217,6 +218,26 @@ app.get("/galleries", async (c) => {
   } catch (error) {
     console.error("Error fetching galleries:", error);
     return c.json({ error: "Failed to fetch galleries" }, 500);
+  }
+});
+
+app.post("/contact", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { customerName, cus_email, message } = body;
+
+    const emailData = {
+      customerName,
+      cus_email,
+      message,
+    };
+
+    const response = await ContactformEmail(emailData);
+
+    return c.json({ message: "Email sent", response });
+  } catch (error) {
+    console.error("Error sending contact form email:", error);
+    return c.json({ error: "Failed to send contact form email" }, 500);
   }
 });
 

@@ -159,11 +159,11 @@ export function DataTable<TData extends BookingData, TValue>({
                 // Determine the row class based on the booking date
                 let rowClass = ""; // Default class
                 if (bookingDate < today) {
-                  rowClass = "bg-red-100/70"; // Past bookings
+                  rowClass = "bg-red-100/70 dark:bg-red-800/30"; // Past bookings
                 } else if (bookingDate.getTime() === today.getTime()) {
-                  rowClass = "bg-green-100/70"; // Today's bookings
+                  rowClass = "bg-green-100/70 dark:bg-green-800/30"; // Today's bookings
                 } else {
-                  rowClass = "bg-blue-100/70"; // Future bookings
+                  rowClass = "bg-blue-100/70 dark:bg-blue-800/30"; // Future bookings
                 }
 
                 return (

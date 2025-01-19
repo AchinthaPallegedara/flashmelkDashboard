@@ -258,6 +258,21 @@ export const deleteBooking = async (bookingId: string) => {
   }
 };
 
+export const deletePandingBooking = async (bookingId: string) => {
+  try {
+    await db.booking.delete({
+      where: {
+        booking_id: bookingId,
+      },
+    });
+    console.log("Booking deleted successfully");
+    return { success: true, message: "Booking deleted" };
+  } catch (error) {
+    console.log("Error deleting booking:", error);
+    return { error: "Error deleting booking" };
+  }
+};
+
 export const getPendingBookingsCount = async () => {
   try {
     const count = await db.booking.count({

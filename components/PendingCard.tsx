@@ -6,7 +6,10 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { PendingBookingType } from "@/app/(Dashboard)/bookings/pending/page";
-import { approveBooking, deleteBooking } from "@/lib/actions/booking.action";
+import {
+  approveBooking,
+  deletePandingBooking,
+} from "@/lib/actions/booking.action";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -93,7 +96,7 @@ const PendingCard = ({ booking }: { booking: PendingBookingType }) => {
   const handleDisapproveBooking = async (id: string) => {
     setLoading(true);
     try {
-      await deleteBooking(id);
+      await deletePandingBooking(id);
       router.refresh();
       toast.success("Booking rejected");
       return;

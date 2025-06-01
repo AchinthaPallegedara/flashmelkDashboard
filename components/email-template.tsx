@@ -57,7 +57,7 @@ export const CustomerConfirmBookingSendEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src={`https://img.flashmelk.com/flashmeemaillogo.png`}
+          src={`https://img.flashmelk.com/Orangelogo.png`}
           width="170"
           height="50"
           alt="flashmelk"

@@ -57,7 +57,7 @@ export const CustomerConfirmBookingSendEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src={`https://img.flashmelk.com/Orangelogo.png`}
+          src={`https://img.flashme.lk/Orangelogo.png`}
           width="170"
           height="50"
           alt="flashmelk"
@@ -115,7 +115,7 @@ export const CustomerSendEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src={`https://img.flashmelk.com/flashmeemaillogo.png`}
+          src={`https://img.flashme.lk/flashmeemaillogo.png`}
           width="170"
           height="50"
           alt="flashmelk"
@@ -169,7 +169,7 @@ export const CustomerContactEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src={`https://img.flashmelk.com/flashmeemaillogo.png`}
+          src={`https://img.flashme.lk/flashmeemaillogo.png`}
           width="170"
           height="50"
           alt="flashmelk"
@@ -218,7 +218,7 @@ export const AdminSendEmail = ({ userFirstname }: CustomerSendEmailProps) => (
     <Body style={main}>
       <Container style={container}>
         <Img
-          src={`https://img.flashmelk.com/flashmeemaillogo.png`}
+          src={`https://img.flashme.lk/flashmeemaillogo.png`}
           width="170"
           height="50"
           alt="flashmelk"
@@ -257,7 +257,7 @@ export const ContactAdminEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src={`https://img.flashmelk.com/flashmeemaillogo.png`}
+          src={`https://img.flashme.lk/flashmeemaillogo.png`}
           width="170"
           height="50"
           alt="flashmelk"

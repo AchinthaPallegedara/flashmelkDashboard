@@ -5,7 +5,7 @@ const Logo = () => {
   return (
     <Link href="/">
       <Image
-        src="https://img.flashmelk.com/Blacklogo.png"
+        src="https://img.flashme.lk/Blacklogo.png"
         alt="Logo"
         width={180}
         height={64}
@@ -13,7 +13,7 @@ const Logo = () => {
         className="flex dark:hidden"
       />
       <Image
-        src="https://img.flashmelk.com/Whitelogo.png"
+        src="https://img.flashme.lk/Whitelogo.png"
         alt="Logo"
         width={180}
         height={64}
